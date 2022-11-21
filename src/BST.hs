@@ -1,4 +1,4 @@
-module BST (BSTree (Nil, Node), bstInsert, bstErase, bstFind, bstFilter, (==)) where
+module BST (BSTree (Nil, Node), bstInsert, bstErase, bstFind, bstFilter, (==), makeTree) where
 
 import Data.Array
 
