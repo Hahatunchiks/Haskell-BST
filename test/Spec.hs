@@ -1,9 +1,10 @@
 {-# Language ScopedTypeVariables, GADTs #-}
 {-# LANGUAGE MultiWayIf #-}
+{-# LANGUAGE FlexibleInstances #-}
 
 module Main (main)   where
 
-import BST (BSTree (Nil, Node), bstInsert, bstErase, bstFind, bstFilter, (==))
+import BST (BSTree (Nil, Node), bstInsert, bstErase, bstFind, bstFilter, (==), makeTree)
 
 import Test.Tasty
 --import Test.Tasty.SmallCheck as SC
@@ -46,20 +47,21 @@ checkFilterTwo = testCase "test: odd numbers doesn't exists" $ assertEqual [] Tr
 
 --check folds bst
 checkFoldOne :: TestTree
-checkFoldOne = testCase "test: check foldr" $ assertEqual [] 42 (foldr1 (+) simpleBinaryTree)
+checkFoldOne = testCase "test: check foldr" $ assertEqual [] 42 (foldl1 (+) simpleBinaryTree)
 
 checkFoldTwo :: TestTree
 checkFoldTwo = testCase "test: check foldr" $ assertEqual [] 42 (foldl1 (+) simpleBinaryTree)
 
 
 -- check BST property
-instance Arbitrary v => Arbitrary (BSTree v) where
+instance Arbitrary (BSTree Int) where
     arbitrary = sized $ \n ->
-        if n Prelude.== 0
+        if n Prelude.== 0 
             then return Nil
-            else frequency [(1, return Nil), (n, resize (n-1) arbitrary)]
+            else return $ makeTree [1..n]
 
-
+shrink Nil = []
+shrink (Node _ l r) = [l,r]
 
 qcTestInsert :: TestTree
 qcTestInsert = QC.testProperty "property based test: insert => you can find it" $ 
