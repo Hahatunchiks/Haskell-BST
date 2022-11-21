@@ -46,10 +46,10 @@ checkFilterTwo = testCase "test: odd numbers doesn't exists" $ assertEqual [] Tr
 
 --check folds bst
 checkFoldOne :: TestTree
-checkFoldOne = testCase "test: check foldr" $ assertEqual [] 42 (sum simpleBinaryTree)
+checkFoldOne = testCase "test: check foldr" $ assertEqual [] 42 (foldr1 (+) simpleBinaryTree)
 
 checkFoldTwo :: TestTree
-checkFoldTwo = testCase "test: check foldr" $ assertEqual [] 42 (sum simpleBinaryTree)
+checkFoldTwo = testCase "test: check foldr" $ assertEqual [] 42 (foldl1 (+) simpleBinaryTree)
 
 
 -- check BST property
