@@ -26,7 +26,6 @@ source-repository head
 library
   exposed-modules:
       BST
-      Lib
   other-modules:
       Paths_haskell_set
   hs-source-dirs:

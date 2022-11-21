@@ -44,6 +44,13 @@ checkFilterOne = testCase "test: exists even numbers" $ assertEqual [] True (bst
 checkFilterTwo :: TestTree
 checkFilterTwo = testCase "test: odd numbers doesn't exists" $ assertEqual [] True (not (bstFind 5 treeFiltered) && not (bstFind 15 treeFiltered))
 
+--check folds bst
+checkFoldOne :: TestTree
+checkFoldOne = testCase "test: check foldr" $ assertEqual [] 42 (foldr1 (+) simpleBinaryTree)
+
+checkFoldTwo :: TestTree
+checkFoldTwo = testCase "test: check foldr" $ assertEqual [] 42 (foldl1 (+) simpleBinaryTree)
+
 
 -- check BST property
 instance Arbitrary v => Arbitrary (BSTree v) where
@@ -79,6 +86,7 @@ tests = testGroup "Unit tests: Binary Search Tree"
             testGroup "Test Insertions" [checkInsertsOne, checkInsertsTwo],
             testGroup "Test Erasings" [checkEraseOne, checkEraseTwo],
             testGroup "Test Filtering" [checkFilterOne, checkFilterTwo],
+            testGroup "Test Folds" [checkFoldOne, checkFoldTwo],
             testGroup "property based test: Inserting" [qcTestInsert],
             testGroup "property based test: Monoid property" [qcTestBinaryAssociativeOperation],
             testGroup "property based test: BST property" [qcTestBinaryIsBST]
