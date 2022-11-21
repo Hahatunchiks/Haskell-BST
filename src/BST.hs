@@ -44,6 +44,7 @@ instance Ord v => Semigroup (BSTree v) where
 -- neutral element in monoid - empty tree (Nil)
 instance Ord v => Monoid (BSTree v) where
     mempty = Nil
+    mappend = (<>)
 
 -- provide Functor type functionality (use fmap)
 instance Functor BSTree where

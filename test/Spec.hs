@@ -46,10 +46,10 @@ checkFilterTwo = testCase "test: odd numbers doesn't exists" $ assertEqual [] Tr
 
 --check folds bst
 checkFoldOne :: TestTree
-checkFoldOne = testCase "test: check foldr" $ assertEqual [] 42 (foldr1 (+) simpleBinaryTree)
+checkFoldOne = testCase "test: check foldr" $ assertEqual [] 42 (sum simpleBinaryTree)
 
 checkFoldTwo :: TestTree
-checkFoldTwo = testCase "test: check foldr" $ assertEqual [] 42 (foldl1 (+) simpleBinaryTree)
+checkFoldTwo = testCase "test: check foldr" $ assertEqual [] 42 (sum simpleBinaryTree)
 
 
 -- check BST property
@@ -67,7 +67,7 @@ qcTestInsert = QC.testProperty "property based test: insert => you can find it" 
 
 qcTestBinaryAssociativeOperation :: TestTree
 qcTestBinaryAssociativeOperation = QC.testProperty "property based test: monoid => u can join trees" $
- \(t :: BSTree Int, k :: BSTree Int) -> (k <> t <> simpleBinaryTree) BST.== (k <> simpleBinaryTree <> t)
+ \(t :: BSTree Int, k :: BSTree Int) -> ((k <> t) <> simpleBinaryTree) BST.== (k <> (t <> simpleBinaryTree))
 
 qcTestBinaryIsBST :: TestTree
 qcTestBinaryIsBST = QC.testProperty "property based test: check binary search tree property" $
