@@ -4,7 +4,7 @@
 
 module Main (main)   where
 
-import BST (BSTree (Nil, Node), bstInsert, bstErase, bstFind, bstFilter, (==), makeTree)
+import BST (BSTree (Nil, Node), bstInsert, bstErase, bstFind, bstFilter, (==), makeTree, left', right', value', bstBalansed)
 
 import Test.Tasty
 --import Test.Tasty.SmallCheck as SC
@@ -21,7 +21,17 @@ treeWithAddedNode :: BSTree Int
 treeWithAddedNode = bstInsert 18 simpleBinaryTree
 
 treeFiltered :: BSTree Int
-treeFiltered = bstFilter (\x -> x `mod` 2 Prelude.== 0) simpleBinaryTree
+treeFiltered = bstFilter even simpleBinaryTree
+
+bstLargeTree :: BSTree Int
+bstLargeTree = makeTree [1..10000]
+
+bstIsBst :: Ord v => BSTree v -> Bool
+bstIsBst Nil = True
+bstIsBst (Node v Nil Nil) = True
+bstIsBst (Node v Nil r) = v < value' r && bstIsBst r
+bstIsBst (Node v l Nil) = v > value' l && bstIsBst l
+bstIsBst (Node v l r) = v < value' r && v > value' l && bstIsBst r && bstIsBst l
 
 --check insertions 
 checkInsertsOne :: TestTree
@@ -47,10 +57,7 @@ checkFilterTwo = testCase "test: odd numbers doesn't exists" $ assertEqual [] Tr
 
 --check folds bst
 checkFoldOne :: TestTree
-checkFoldOne = testCase "test: check foldr" $ assertEqual [] 42 (foldl1 (+) simpleBinaryTree)
-
-checkFoldTwo :: TestTree
-checkFoldTwo = testCase "test: check foldr" $ assertEqual [] 42 (foldl1 (+) simpleBinaryTree)
+checkFoldOne = testCase "test: check foldr" $ assertEqual [] 42 (sum simpleBinaryTree)
 
 
 -- check BST property
@@ -63,23 +70,34 @@ instance Arbitrary (BSTree Int) where
 shrink Nil = []
 shrink (Node _ l r) = [l,r]
 
+
 qcTestInsert :: TestTree
 qcTestInsert = QC.testProperty "property based test: insert => you can find it" $ 
-  \(n :: Int) t -> bstFind n (bstInsert n t)
+  \(n :: Int, t :: BSTree Int)  -> bstFind n (bstInsert n t)
+
+
+qcTestErase :: TestTree
+qcTestErase = QC.testProperty "property based test: erase => you can not find it" $ 
+  \(n :: Int)  -> not (bstFind n (bstErase n bstLargeTree)) 
+
+
+qcTestisBst :: TestTree
+qcTestisBst = QC.testProperty "property based test: erase => is balansed bst" $ 
+  \(n :: Int)  -> bstIsBst (bstErase n bstLargeTree) && bstBalansed (bstErase n bstLargeTree)
 
 qcTestBinaryAssociativeOperation :: TestTree
-qcTestBinaryAssociativeOperation = QC.testProperty "property based test: monoid => u can join trees" $
- \(t :: BSTree Int, k :: BSTree Int) -> ((k <> t) <> simpleBinaryTree) BST.== (k <> (t <> simpleBinaryTree))
+qcTestBinaryAssociativeOperation = QC.testProperty "property based test: monoid => u can join trees in balances bst" $
+ \(t :: BSTree Int, k :: BSTree Int) -> (((k <> t) <> simpleBinaryTree) BST.== (k <> (t <> simpleBinaryTree))) && bstIsBst (k <> (t <> simpleBinaryTree)) && bstBalansed (k <> (t <> simpleBinaryTree))
 
 qcTestBinaryIsBST :: TestTree
-qcTestBinaryIsBST = QC.testProperty "property based test: check binary search tree property" $
+qcTestBinaryIsBST = QC.testProperty "property based test: check balanced binary search tree property" $
  \(t :: BSTree Int, k :: Int)  -> t BST.== Nil ||
     (let 
         Node v l r = bstInsert k t
     in 
-        if  | v == k -> True 
-            | v < k -> bstFind k r
-            | otherwise -> bstFind k l)
+        if  | v == k -> bstBalansed (Node v l r)
+            | v < k -> bstFind k r && bstBalansed (Node v l r)
+            | otherwise -> bstFind k l && bstBalansed (Node v l r))
 
 
 tests :: TestTree
@@ -88,8 +106,8 @@ tests = testGroup "Unit tests: Binary Search Tree"
             testGroup "Test Insertions" [checkInsertsOne, checkInsertsTwo],
             testGroup "Test Erasings" [checkEraseOne, checkEraseTwo],
             testGroup "Test Filtering" [checkFilterOne, checkFilterTwo],
-            testGroup "Test Folds" [checkFoldOne, checkFoldTwo],
-            testGroup "property based test: Inserting" [qcTestInsert],
+            testGroup "Test Folds" [checkFoldOne],
+            testGroup "property based test: Inserting, Erasing" [qcTestInsert, qcTestErase, qcTestisBst],
             testGroup "property based test: Monoid property" [qcTestBinaryAssociativeOperation],
             testGroup "property based test: BST property" [qcTestBinaryIsBST]
         ]
